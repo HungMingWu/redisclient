@@ -2,6 +2,7 @@
 #include <iostream>
 #include <functional>
 #include <boost/asio/ip/address.hpp>
+#include <asio.hpp>
 
 #include <redisclient/redisasyncclient.h>
 
@@ -11,21 +12,21 @@ static const std::string redisValue = "unique-redis-value";
 class Worker
 {
 public:
-    Worker(boost::asio::io_service &ioService, redisclient::RedisAsyncClient &redisClient)
+    Worker(asio::io_context &ioService, redisclient::RedisAsyncClient &redisClient)
         : ioService(ioService), redisClient(redisClient)
     {}
 
-    void onConnect(boost::system::error_code ec);
+    void onConnect(asio::error_code ec);
     void onSet(const redisclient::RedisValue &value);
     void onGet(const redisclient::RedisValue &value);
     void stop();
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
     redisclient::RedisAsyncClient &redisClient;
 };
 
-void Worker::onConnect(boost::system::error_code ec)
+void Worker::onConnect(asio::error_code ec)
 {
     if(ec)
     {
@@ -61,17 +62,17 @@ void Worker::onGet(const redisclient::RedisValue &value)
     }
 
     redisClient.command("DEL", {redisKey},
-                        std::bind(&boost::asio::io_service::stop, std::ref(ioService)));
+                        std::bind(&asio::io_context::stop, std::ref(ioService)));
 }
 
 
 int main(int, char **)
 {
-    boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const int port = 6379;
-    boost::asio::ip::tcp::endpoint endpoint(address, port);
+    asio::ip::tcp::endpoint endpoint(address, port);
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     redisclient::RedisAsyncClient client(ioService);
     Worker worker(ioService, client);
 

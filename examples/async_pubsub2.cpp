@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <asio.hpp>
 #include <boost/asio/ip/address.hpp>
 
 #include <redisclient/redisasyncclient.h>
@@ -11,7 +12,7 @@ static const std::string channelName = "unique-redis-channel-name-example";
 class Client
 {
 public:
-    Client(boost::asio::io_service &ioService)
+    Client(asio::io_context &ioService)
         : ioService(ioService)
     {}
 
@@ -26,7 +27,7 @@ public:
     }
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
 };
 
 void publishHandler(redisclient::RedisAsyncClient &publisher, const redisclient::RedisValue &)
@@ -40,16 +41,16 @@ void publishHandler(redisclient::RedisAsyncClient &publisher, const redisclient:
 
 int main(int, char **)
 {
-    boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
-    boost::asio::ip::tcp::endpoint endpoint(address, port);
+    asio::ip::tcp::endpoint endpoint(address, port);
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     redisclient::RedisAsyncClient publisher(ioService);
     redisclient::RedisAsyncClient subscriber(ioService);
     Client client(ioService);
 
-    publisher.connect(endpoint, [&](boost::system::error_code ec)
+    publisher.connect(endpoint, [&](asio::error_code ec)
     {
         if(ec)
         {
@@ -57,7 +58,7 @@ int main(int, char **)
         }
         else
         {
-            subscriber.connect(endpoint, [&](boost::system::error_code ec)
+            subscriber.connect(endpoint, [&](asio::error_code ec)
             {
                 if( ec )
                 {

@@ -1,20 +1,20 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <boost/asio/io_service.hpp>
+#include <asio.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <redisclient/pipeline.h>
 #include <redisclient/redissyncclient.h>
 
 int main(int, char **)
 {
-    boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
-    boost::asio::ip::tcp::endpoint endpoint(address, port);
+    asio::ip::tcp::endpoint endpoint(address, port);
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     redisclient::RedisSyncClient redis(ioService);
-    boost::system::error_code ec;
+    asio::error_code ec;
 
     redis.connect(endpoint, ec);
 

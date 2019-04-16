@@ -3,6 +3,7 @@
 #include <regex>
 #include <memory>
 
+#include <asio.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/format.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -21,19 +22,19 @@ struct Config
 class Benchmark
 {
 public:
-    Benchmark(boost::asio::io_service &ioService, const Config &config)
+    Benchmark(asio::io_context &ioService, const Config &config)
         : ioService(ioService), config(config)
     {
     }
 
     void run()
     {
-        boost::asio::ip::tcp::endpoint endpoint(
-                boost::asio::ip::address::from_string(config.address), config.port);
+        asio::ip::tcp::endpoint endpoint(
+                asio::ip::address::from_string(config.address), config.port);
 
 
         redisclient::RedisSyncClient redisClient(ioService);
-        boost::system::error_code ec;
+        asio::error_code ec;
 
         redisClient.connect(endpoint, ec);
 
@@ -86,7 +87,7 @@ private:
     }
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
     Config config;
 };
 
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     Benchmark benchmark(ioService, config);
 
     benchmark.run();

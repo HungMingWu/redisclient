@@ -6,8 +6,7 @@
 #ifndef REDISSYNCCLIENT_REDISCLIENT_H
 #define REDISSYNCCLIENT_REDISCLIENT_H
 
-#include <boost/asio/io_service.hpp>
-#include <boost/noncopyable.hpp>
+#include <asio.hpp>
 
 #include <string>
 #include <list>
@@ -23,30 +22,32 @@ namespace redisclient {
 class RedisClientImpl;
 class Pipeline;
 
-class RedisSyncClient : boost::noncopyable {
+class RedisSyncClient {
 public:
+    RedisSyncClient(const RedisSyncClient&) = delete;
+    RedisSyncClient& operator=(const RedisSyncClient&) = delete;
     typedef RedisClientImpl::State State;
 
-    REDIS_CLIENT_DECL RedisSyncClient(boost::asio::io_service &ioService);
+    REDIS_CLIENT_DECL RedisSyncClient(asio::io_context &ioService);
     REDIS_CLIENT_DECL RedisSyncClient(RedisSyncClient &&other);
     REDIS_CLIENT_DECL ~RedisSyncClient();
 
     // Connect to redis server
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::ip::tcp::endpoint &endpoint,
-            boost::system::error_code &ec);
+            const asio::ip::tcp::endpoint &endpoint,
+            asio::error_code &ec);
 
     // Connect to redis server
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::ip::tcp::endpoint &endpoint);
+            const asio::ip::tcp::endpoint &endpoint);
 
 #ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::local::stream_protocol::endpoint &endpoint,
-            boost::system::error_code &ec);
+            const asio::local::stream_protocol::endpoint &endpoint,
+            asio::error_code &ec);
 
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::local::stream_protocol::endpoint &endpoint);
+            const asio::local::stream_protocol::endpoint &endpoint);
 #endif
 
     // Return true if is connected to redis.
@@ -66,14 +67,14 @@ public:
     // Execute command on Redis server with the list of arguments.
     REDIS_CLIENT_DECL RedisValue command(
             std::string cmd, std::deque<RedisBuffer> args,
-            boost::system::error_code &ec);
+            asio::error_code &ec);
 
     // Create pipeline (see Pipeline)
     REDIS_CLIENT_DECL Pipeline pipelined();
 
     REDIS_CLIENT_DECL RedisValue pipelined(
             std::deque<std::deque<RedisBuffer>> commands,
-            boost::system::error_code &ec);
+            asio::error_code &ec);
 
     REDIS_CLIENT_DECL RedisValue pipelined(
             std::deque<std::deque<RedisBuffer>> commands);

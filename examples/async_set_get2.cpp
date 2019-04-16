@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
-#include <boost/asio/io_service.hpp>
+#include <asio.hpp>
 #include <boost/asio/ip/address.hpp>
 
 #include <redisclient/redisasyncclient.h>
@@ -9,8 +9,8 @@
 static const std::string redisKey = "unique-redis-key-example";
 static const std::string redisValue = "unique-redis-value";
 
-void handleConnected(boost::asio::io_service &ioService, redisclient::RedisAsyncClient &redis,
-        boost::system::error_code ec)
+void handleConnected(asio::io_context &ioService, redisclient::RedisAsyncClient &redis,
+        asio::error_code ec)
 {
     if( !ec )
     {
@@ -34,11 +34,11 @@ void handleConnected(boost::asio::io_service &ioService, redisclient::RedisAsync
 
 int main(int, char **)
 {
-    boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
-    boost::asio::ip::tcp::endpoint endpoint(address, port);
+    asio::ip::tcp::endpoint endpoint(address, port);
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     redisclient::RedisAsyncClient redis(ioService);
 
     redis.connect(endpoint,

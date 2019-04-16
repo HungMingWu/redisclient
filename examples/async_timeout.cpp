@@ -1,8 +1,9 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <asio.hpp>
+#include <chrono>
 #include <boost/asio/ip/address.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
 #include <redisclient/redisasyncclient.h>
 
@@ -11,9 +12,9 @@ static const std::string redisKey = "unique-redis-key-example";
 class Worker
 {
 public:
-    Worker(boost::asio::io_service &ioService)
+    Worker(asio::io_context &ioService)
         : ioService(ioService), redisClient(ioService), timer(ioService),
-        timeout(boost::posix_time::seconds(3))
+        timeout(std::chrono::seconds(3))
     {
     }
 
@@ -21,17 +22,17 @@ public:
     void stop();
 
 protected:
-    void onConnect(boost::system::error_code ec);
+    void onConnect(asio::error_code ec);
     void onGet(const redisclient::RedisValue &value);
     void get();
 
-    void onTimeout(const boost::system::error_code &ec);
+    void onTimeout(const asio::error_code &ec);
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
     redisclient::RedisAsyncClient redisClient;
-    boost::asio::deadline_timer timer;
-    boost::posix_time::time_duration timeout;
+    asio::steady_timer timer;
+    std::chrono::seconds timeout;
 };
 
 void Worker::run()
@@ -39,7 +40,7 @@ void Worker::run()
     const char *address = "127.0.0.1";
     const int port = 6379;
 
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(address), port);
+    asio::ip::tcp::endpoint endpoint(asio::ip::address::from_string(address), port);
 
     timer.expires_from_now(timeout);
     timer.async_wait(std::bind(&Worker::onTimeout, this, std::placeholders::_1));
@@ -48,11 +49,11 @@ void Worker::run()
                 std::placeholders::_1));
 }
 
-void Worker::onConnect(boost::system::error_code ec)
+void Worker::onConnect(asio::error_code ec)
 {
     if (ec)
     {
-        if (ec != boost::asio::error::operation_aborted)
+        if (ec != asio::error::operation_aborted)
         {
             timer.cancel();
             std::cerr << "Can't connect to redis: " << ec.message() << "\n";
@@ -84,7 +85,7 @@ void Worker::get()
 }
 
 
-void Worker::onTimeout(const boost::system::error_code &ec)
+void Worker::onTimeout(const asio::error_code &ec)
 {
     if (!ec)
     {
@@ -99,7 +100,7 @@ void Worker::onTimeout(const boost::system::error_code &ec)
 
 int main(int, char **)
 {
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     Worker worker(ioService);
 
     worker.run();

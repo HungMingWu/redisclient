@@ -6,6 +6,7 @@
 #ifndef REDISCLIENT_REDISVALUE_CPP
 #define REDISCLIENT_REDISVALUE_CPP
 
+#include <assert.h>
 #include <string.h>
 
 #include "redisclient/redisvalue.h"
@@ -161,25 +162,25 @@ bool RedisValue::isArray() const
 std::vector<char> &RedisValue::getByteArray()
 {
     assert(isByteArray());
-    return boost::get<std::vector<char>>(value);
+    return std::get<std::vector<char>>(value);
 }
 
 const std::vector<char> &RedisValue::getByteArray() const
 {
     assert(isByteArray());
-    return boost::get<std::vector<char>>(value);
+    return std::get<std::vector<char>>(value);
 }
 
 std::vector<RedisValue> &RedisValue::getArray()
 {
     assert(isArray());
-    return boost::get<std::vector<RedisValue>>(value);
+    return std::get<std::vector<RedisValue>>(value);
 }
 
 const std::vector<RedisValue> &RedisValue::getArray() const
 {
     assert(isArray());
-    return boost::get<std::vector<RedisValue>>(value);
+    return std::get<std::vector<RedisValue>>(value);
 }
 
 bool RedisValue::operator == (const RedisValue &rhs) const

@@ -6,9 +6,7 @@
 #ifndef REDISASYNCCLIENT_REDISCLIENT_H
 #define REDISASYNCCLIENT_REDISCLIENT_H
 
-#include <boost/asio/io_service.hpp>
-#include <boost/noncopyable.hpp>
-
+#include <asio.hpp>
 #include <string>
 #include <list>
 #include <type_traits>
@@ -23,8 +21,10 @@ namespace redisclient {
 
 class RedisClientImpl;
 
-class RedisAsyncClient : boost::noncopyable {
+class RedisAsyncClient {
 public:
+    RedisAsyncClient(const RedisAsyncClient&) = delete;
+    RedisAsyncClient& operator=(const RedisAsyncClient&) = delete;
     // Subscribe handle.
     struct Handle {
         size_t id;
@@ -33,18 +33,18 @@ public:
 
     typedef RedisClientImpl::State State;
 
-    REDIS_CLIENT_DECL RedisAsyncClient(boost::asio::io_service &ioService);
+    REDIS_CLIENT_DECL RedisAsyncClient(asio::io_context &ioService);
     REDIS_CLIENT_DECL ~RedisAsyncClient();
 
     // Connect to redis server
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::ip::tcp::endpoint &endpoint,
-            std::function<void(boost::system::error_code)> handler);
+            const asio::ip::tcp::endpoint &endpoint,
+            std::function<void(asio::error_code)> handler);
 
 #ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
     REDIS_CLIENT_DECL void connect(
-            const boost::asio::local::stream_protocol::endpoint &endpoint,
-            std::function<void(boost::system::error_code)> handler);
+            const asio::local::stream_protocol::endpoint &endpoint,
+            std::function<void(asio::error_code)> handler);
 #endif
 
     // Return true if is connected to redis.

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <deque>
+#include <asio.hpp>
 #include <boost/system/error_code.hpp>
 
 #include "redisbuffer.h"
@@ -43,7 +44,7 @@ public:
     //  result[2];  // value of the key "more"
     //
     REDIS_CLIENT_DECL RedisValue finish();
-    REDIS_CLIENT_DECL RedisValue finish(boost::system::error_code &ec);
+    REDIS_CLIENT_DECL RedisValue finish(asio::error_code &ec);
 
 private:
     std::deque<std::deque<RedisBuffer>> commands;

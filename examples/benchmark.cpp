@@ -2,7 +2,9 @@
 #include <iostream>
 #include <regex>
 #include <memory>
+#include <chrono>
 
+#include <asio.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/format.hpp>
@@ -23,10 +25,10 @@ struct Config
 // Fetch operations-per-second value from redis-server
 class OpsFetcher : public std::enable_shared_from_this<OpsFetcher> {
 public:
-    OpsFetcher(boost::asio::io_service &ioService,
+    OpsFetcher(asio::io_context &ioService,
             std::shared_ptr<redisclient::RedisAsyncClient> redisClient)
         : ioService(ioService), timer(ioService), redisClient(redisClient),
-        timeout(boost::posix_time::seconds(1))
+        timeout(std::chrono::seconds(1))
     {
     }
 
@@ -36,9 +38,9 @@ public:
     }
 
 protected:
-    void onTimeout(const boost::system::error_code &errorCode)
+    void onTimeout(const asio::error_code &errorCode)
     {
-        if( errorCode != boost::asio::error::operation_aborted )
+        if( errorCode != asio::error::operation_aborted )
         {
             resetTimeout();
             redisClient->command("info", {"stats"},
@@ -68,17 +70,17 @@ protected:
     }
 
 private:
-    boost::asio::io_service &ioService;
-    boost::asio::deadline_timer timer;
+    asio::io_context &ioService;
+    asio::steady_timer timer;
     std::shared_ptr<redisclient::RedisAsyncClient> redisClient;
-    const boost::posix_time::time_duration timeout;
+    const std::chrono::seconds timeout;
 
 };
 
 class Worker : public std::enable_shared_from_this<Worker>
 {
 public:
-    Worker(boost::asio::io_service &ioService,
+    Worker(asio::io_context &ioService,
             std::shared_ptr<redisclient::RedisAsyncClient> redisClient)
         : ioService(ioService), redisClient(redisClient)
     {
@@ -112,22 +114,22 @@ public:
     }
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
     std::shared_ptr<redisclient::RedisAsyncClient> redisClient;
 };
 
 class Benchmark
 {
 public:
-    Benchmark(boost::asio::io_service &ioService, const Config &config)
+    Benchmark(asio::io_context &ioService, const Config &config)
         : ioService(ioService), config(config)
     {
     }
 
     void run()
     {
-        boost::asio::ip::tcp::endpoint endpoint(
-                boost::asio::ip::address::from_string(config.address), config.port);
+        asio::ip::tcp::endpoint endpoint(
+                asio::ip::address::from_string(config.address), config.port);
 
         if( config.connectionPerWorker )
         {
@@ -179,7 +181,7 @@ private:
         rpcFetcher->run();
     }
 
-    void onConnect(boost::system::error_code ec, std::function<void()> callback)
+    void onConnect(asio::error_code ec, std::function<void()> callback)
     {
         if(ec)
         {
@@ -194,7 +196,7 @@ private:
     }
 
 private:
-    boost::asio::io_service &ioService;
+    asio::io_context &ioService;
     Config config;
 };
 
@@ -234,7 +236,7 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
     Benchmark benchmark(ioService, config);
 
     benchmark.run();

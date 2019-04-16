@@ -1,5 +1,7 @@
 #include <string>
 #include <iostream>
+#include <asio.hpp>
+#include <chrono>
 #include <boost/asio/ip/address.hpp>
 #include <boost/format.hpp>
 #include <boost/asio/deadline_timer.hpp>
@@ -9,13 +11,13 @@
 using namespace redisclient;
 
 static const std::string channelName = "unique-redis-channel-name-example";
-static const boost::posix_time::seconds timeout(1);
+static const std::chrono::seconds timeout(1);
 
 class Client
 {
 public:
-    Client(boost::asio::io_service &ioService,
-           const boost::asio::ip::address &address,
+    Client(asio::io_context &ioService,
+           const asio::ip::address &address,
            unsigned short port)
         : ioService(ioService), publishTimer(ioService),
           connectSubscriberTimer(ioService), connectPublisherTimer(ioService),
@@ -61,7 +63,7 @@ protected:
             publishTimer.cancel();
         }
 
-        boost::asio::ip::tcp::endpoint endpoint(address, port);
+        asio::ip::tcp::endpoint endpoint(address, port);
         publisher.connect(endpoint,
                           std::bind(&Client::onPublisherConnected, this, std::placeholders::_1));
     }
@@ -77,17 +79,17 @@ protected:
             subscriber.disconnect();
         }
 
-        boost::asio::ip::tcp::endpoint endpoint(address, port);
+        asio::ip::tcp::endpoint endpoint(address, port);
         subscriber.connect(endpoint,
                            std::bind(&Client::onSubscriberConnected, this, std::placeholders::_1));
     }
 
-    void callLater(boost::asio::deadline_timer &timer,
+    void callLater(asio::steady_timer &timer,
                    void(Client::*callback)())
     {
         std::cerr << "callLater\n";
         timer.expires_from_now(timeout);
-        timer.async_wait([callback, this](const boost::system::error_code &ec) {
+        timer.async_wait([callback, this](const asio::error_code &ec) {
             if( !ec )
             {
                 (this->*callback)();
@@ -109,7 +111,7 @@ protected:
         callLater(publishTimer, &Client::onPublishTimeout);
     }
 
-    void onPublisherConnected(boost::system::error_code ec)
+    void onPublisherConnected(asio::error_code ec)
     {
         if(ec)
         {
@@ -124,7 +126,7 @@ protected:
         }
     }
 
-    void onSubscriberConnected(boost::system::error_code ec)
+    void onSubscriberConnected(asio::error_code ec)
     {
         if( ec )
         {
@@ -148,11 +150,11 @@ protected:
     }
 
 private:
-    boost::asio::io_service &ioService;
-    boost::asio::deadline_timer publishTimer;
-    boost::asio::deadline_timer connectSubscriberTimer;
-    boost::asio::deadline_timer connectPublisherTimer;
-    const boost::asio::ip::address address;
+    asio::io_context &ioService;
+    asio::steady_timer publishTimer;
+    asio::steady_timer connectSubscriberTimer;
+    asio::steady_timer connectPublisherTimer;
+    const asio::ip::address address;
     const unsigned short port;
 
     RedisAsyncClient publisher;
@@ -161,10 +163,10 @@ private:
 
 int main(int, char **)
 {
-    boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
 
-    boost::asio::io_service ioService;
+    asio::io_context ioService;
 
     Client client(ioService, address, port);
 

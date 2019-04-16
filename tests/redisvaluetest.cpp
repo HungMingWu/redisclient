@@ -103,8 +103,8 @@ BOOST_AUTO_TEST_CASE(test_get_value_array_thow_error)
     RedisValue value(1);
     const RedisValue constValue(1);
 
-    BOOST_CHECK_THROW(value.getArray(), boost::bad_get);
-    BOOST_CHECK_THROW(constValue.getArray(), boost::bad_get);
+    BOOST_CHECK_THROW(value.getArray(), std::bad_variant_access);
+    BOOST_CHECK_THROW(constValue.getArray(), std::bad_variant_access);
 }
 
 BOOST_AUTO_TEST_CASE(test_get_byte_array_throw_error)
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(test_get_byte_array_throw_error)
     RedisValue value(1);
     const RedisValue constValue(1);
 
-    BOOST_CHECK_THROW(value.getByteArray(), boost::bad_get);
-    BOOST_CHECK_THROW(constValue.getByteArray(), boost::bad_get);
+    BOOST_CHECK_THROW(value.getByteArray(), std::bad_variant_access);
+    BOOST_CHECK_THROW(constValue.getByteArray(), std::bad_variant_access);
 }
 

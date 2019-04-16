@@ -7,10 +7,9 @@
 #ifndef REDISSYNCCLIENT_REDISBUFFER_H
 #define REDISSYNCCLIENT_REDISBUFFER_H
 
-#include <boost/variant.hpp>
-
 #include <string>
 #include <vector>
+#include <variant>
 
 #include "config.h"
 
@@ -26,7 +25,7 @@ struct RedisBuffer
 
     inline size_t size() const;
 
-    boost::variant<std::string,std::vector<char>> data;
+    std::variant<std::string,std::vector<char>> data;
 };
 
 
@@ -50,12 +49,17 @@ RedisBuffer::RedisBuffer(std::vector<char> buf)
 {
 }
 
+template<class V>
+std::type_info const& var_type(V const& v){
+  return std::visit( [](auto&&x)->decltype(auto){ return typeid(x); }, v );
+}
+
 size_t RedisBuffer::size() const
 {
-    if (data.type() == typeid(std::string))
-        return boost::get<std::string>(data).size();
+    if (var_type(data) == typeid(std::string))
+        return std::get<std::string>(data).size();
     else
-        return boost::get<std::vector<char>>(data).size();
+        return std::get<std::vector<char>>(data).size();
 }
 
 }
