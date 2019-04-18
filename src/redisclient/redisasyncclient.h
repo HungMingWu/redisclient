@@ -40,12 +40,6 @@ public:
             const asio::ip::tcp::endpoint &endpoint,
             std::function<void(asio::error_code)> handler);
 
-#ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
-    void connect(
-            const asio::local::stream_protocol::endpoint &endpoint,
-            std::function<void(asio::error_code)> handler);
-#endif
-
     // Return true if is connected to redis.
     bool isConnected() const;
 

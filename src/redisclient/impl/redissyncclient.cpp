@@ -60,30 +60,6 @@ void RedisSyncClient::connect(const std::string& host, const std::string& servic
         pimpl->state = State::Connected;
 }
 
-#ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
-
-void RedisSyncClient::connect(const asio::local::stream_protocol::endpoint &endpoint)
-{
-    asio::error_code ec;
-
-    connect(endpoint, ec);
-    detail::throwIfError(ec);
-}
-
-void RedisSyncClient::connect(const asio::local::stream_protocol::endpoint &endpoint,
-        asio::error_code &ec)
-{
-    pimpl->socket.open(endpoint.protocol(), ec);
-
-    if (!ec)
-        pimpl->socket.connect(endpoint, ec);
-
-    if (!ec)
-        pimpl->state = State::Connected;
-}
-
-#endif
-
 bool RedisSyncClient::isConnected() const
 {
     return pimpl->getState() == State::Connected ||

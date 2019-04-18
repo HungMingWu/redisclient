@@ -41,15 +41,6 @@ public:
     void connect(
             const std::string& host, const std::string& service);
 
-#ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
-    void connect(
-            const asio::local::stream_protocol::endpoint &endpoint,
-            asio::error_code &ec);
-
-    void connect(
-            const asio::local::stream_protocol::endpoint &endpoint);
-#endif
-
     // Return true if is connected to redis.
     bool isConnected() const;
 

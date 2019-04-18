@@ -50,29 +50,6 @@ void RedisAsyncClient::connect(const asio::ip::tcp::endpoint &endpoint,
     }
 }
 
-#ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
-
-void RedisAsyncClient::connect(const asio::local::stream_protocol::endpoint &endpoint,
-                               std::function<void(asio::error_code)> handler)
-{
-    if( pimpl->state == State::Unconnected || pimpl->state == State::Closed )
-    {
-        pimpl->state = State::Connecting;
-        pimpl->socket.async_connect(endpoint, std::bind(&RedisClientImpl::handleAsyncConnect,
-                    pimpl, std::placeholders::_1, std::move(handler)));
-    }
-    else
-    {
-        // FIXME: add correct error message
-        //std::stringstream ss;
-        //ss << "RedisAsyncClient::connect called on socket with state " << to_string(pimpl->state);
-        //handler(false, ss.str());
-        handler(asio::error_code());
-    }
-}
-
-#endif
-
 bool RedisAsyncClient::isConnected() const
 {
     return pimpl->getState() == State::Connected ||
