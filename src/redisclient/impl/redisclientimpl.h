@@ -27,6 +27,10 @@
 namespace redisclient {
 
 class RedisClientImpl : public std::enable_shared_from_this<RedisClientImpl> {
+	void run(std::chrono::steady_clock::duration timeout);
+	size_t read(asio::mutable_buffer buffer, std::chrono::steady_clock::duration timeout, asio::error_code& ec);
+	void write(const std::vector<char>& data,
+		std::chrono::steady_clock::duration timeout, asio::error_code& ec);
 public:
     enum class State {
         Unconnected,

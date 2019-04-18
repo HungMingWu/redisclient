@@ -3,6 +3,7 @@
 #include <functional>
 #include <asio.hpp>
 #include <chrono>
+#include <thread>
 #include <boost/asio/ip/address.hpp>
 
 #include <redisclient/redisasyncclient.h>
@@ -70,7 +71,7 @@ void Worker::onGet(const redisclient::RedisValue &value)
 {
     timer.cancel();
     std::cerr << "GET " << value.toString() << std::endl;
-    sleep(1);
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
     get();
 }

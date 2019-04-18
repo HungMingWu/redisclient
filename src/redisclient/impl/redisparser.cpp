@@ -6,6 +6,7 @@
 #ifndef REDISCLIENT_REDISPARSER_CPP
 #define REDISCLIENT_REDISPARSER_CPP
 
+#include <algorithm>
 #include <sstream>
 #include <assert.h>
 

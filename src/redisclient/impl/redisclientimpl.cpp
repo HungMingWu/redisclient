@@ -57,164 +57,6 @@ namespace
     {
         vec.insert(vec.end(), s, s + size);
     }
-
-    ssize_t socketReadSomeImpl(int socket, char *buffer, size_t size,
-            size_t timeoutMsec)
-    {
-        struct timeval tv = {static_cast<time_t>(timeoutMsec / 1000),
-            static_cast<__suseconds_t>((timeoutMsec % 1000) * 1000)};
-        int result = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-        if (result != 0)
-        {
-            return result;
-        }
-
-        pollfd pfd;
-
-        pfd.fd = socket;
-        pfd.events = POLLIN;
-
-        result = ::poll(&pfd, 1, timeoutMsec);
-        if (result > 0)
-        {
-            return recv(socket, buffer, size, MSG_DONTWAIT);
-        }
-        else
-        {
-            return result;
-        }
-    }
-
-    size_t socketReadSome(int socket, asio::mutable_buffer buffer,
-            const std::chrono::milliseconds &timeout,
-            asio::error_code &ec)
-    {
-        size_t bytesRecv = 0;
-        size_t timeoutMsec = timeout.count();
-
-        for(;;)
-        {
-            ssize_t result = socketReadSomeImpl(socket,
-                    asio::buffer_cast<char *>(buffer) + bytesRecv,
-                    asio::buffer_size(buffer) - bytesRecv, timeoutMsec);
-
-            if (result < 0)
-            {
-                if (errno == EINTR)
-                {
-                    continue;
-                }
-                else
-                {
-                    ec = asio::error_code(errno,
-                            asio::error::get_system_category());
-                    break;
-                }
-            }
-            else if (result == 0)
-            {
-                // asio::error::connection_reset();
-                // asio::error::eof
-                ec = asio::error::eof;
-                break;
-            }
-            else
-            {
-                bytesRecv += result;
-                break;
-            }
-        }
-
-        return bytesRecv;
-    }
-
-
-    ssize_t socketWriteImpl(int socket, const char *buffer, size_t size,
-            size_t timeoutMsec)
-    {
-        struct timeval tv = {static_cast<time_t>(timeoutMsec / 1000),
-            static_cast<__suseconds_t>((timeoutMsec % 1000) * 1000)};
-        int result = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-        if (result != 0)
-        {
-            return result;
-        }
-
-        pollfd pfd;
-
-        pfd.fd = socket;
-        pfd.events = POLLOUT;
-
-        result = ::poll(&pfd, 1, timeoutMsec);
-        if (result > 0)
-        {
-            return send(socket, buffer, size, 0);
-        }
-        else
-        {
-            return result;
-        }
-    }
-
-    size_t socketWrite(int socket, asio::const_buffer buffer,
-            const std::chrono::milliseconds &timeout,
-            asio::error_code &ec)
-    {
-        size_t bytesSend = 0;
-        size_t timeoutMsec = timeout.count();
-
-        while(bytesSend < asio::buffer_size(buffer))
-        {
-            ssize_t result = socketWriteImpl(socket,
-                    asio::buffer_cast<const char *>(buffer) + bytesSend,
-                    asio::buffer_size(buffer) - bytesSend, timeoutMsec);
-
-            if (result < 0)
-            {
-                if (errno == EINTR)
-                {
-                    continue;
-                }
-                else
-                {
-                    ec = asio::error_code(errno,
-                            asio::error::get_system_category());
-                    break;
-                }
-            }
-            else if (result == 0)
-            {
-                    // asio::error::connection_reset();
-                    // asio::error::eof
-                    ec = asio::error::eof;
-                    break;
-            }
-            else
-            {
-                bytesSend += result;
-            }
-        }
-
-        return bytesSend;
-    }
-
-    size_t socketWrite(int socket, const std::vector<asio::const_buffer> &buffers,
-            const std::chrono::milliseconds &timeout,
-            asio::error_code &ec)
-    {
-        size_t bytesSend = 0;
-        for(const auto &buffer: buffers)
-        {
-            bytesSend += socketWrite(socket, buffer, timeout, ec);
-
-            if (ec)
-                break;
-        }
-
-        return bytesSend;
-    }
 }
 
 namespace redisclient {
@@ -399,12 +241,79 @@ std::vector<char> RedisClientImpl::makeCommand(const std::deque<RedisBuffer> &it
 
     return result;
 }
+
+void RedisClientImpl::run(std::chrono::steady_clock::duration timeout)
+{
+	// Restart the io_context, as it may have been left in the "stopped" state
+	// by a previous operation.
+	ioService.restart();
+
+	// Block until the asynchronous operation has completed, or timed out. If
+	// the pending asynchronous operation is a composed operation, the deadline
+	// applies to the entire operation, rather than individual operations on
+	// the socket.
+	ioService.run_for(timeout);
+
+	// If the asynchronous operation completed successfully then the io_context
+	// would have been stopped due to running out of work. If it was not
+	// stopped, then the io_context::run_for call must have timed out.
+	if (!ioService.stopped())
+	{
+		// Close the socket to cancel the outstanding asynchronous operation.
+		socket.close();
+
+		// Run the io_context again until the operation completes.
+		ioService.run();
+	}
+}
+
+size_t RedisClientImpl::read(asio::mutable_buffer buffer,
+	std::chrono::steady_clock::duration timeout, asio::error_code& ec)
+{
+	// Start the asynchronous operation. The lambda that is used as a callback
+	// will update the error and n variables when the operation completes. The
+	// blocking_udp_client.cpp example shows how you can use std::bind rather
+	// than a lambda.
+	std::size_t n = 0;
+	socket.async_read_some(
+		buffer, 
+		[&](std::error_code result_error,
+			std::size_t result_n)
+		{
+			ec = result_error;
+			n = result_n;
+		});
+
+	// Run the operation until it completes, or until the timeout.
+	run(timeout);
+	return n;
+}
+
+void RedisClientImpl::write(const std::vector<char>& data,
+	std::chrono::steady_clock::duration timeout, asio::error_code& ec)
+{
+	// Start the asynchronous operation itself. The lambda that is used as a
+	// callback will update the error variable when the operation completes.
+	// The blocking_udp_client.cpp example shows how you can use std::bind
+	// rather than a lambda.
+	std::error_code error;
+	asio::async_write(socket, asio::buffer(data),
+		[&](asio::error_code result_error,
+			std::size_t /*result_n*/)
+		{
+			ec = result_error;
+		});
+
+	// Run the operation until it completes, or until the timeout.
+	run(timeout);
+}
+
 RedisValue RedisClientImpl::doSyncCommand(const std::deque<RedisBuffer> &command,
         const std::chrono::milliseconds &timeout,
         asio::error_code &ec)
 {
     std::vector<char> data = makeCommand(command);
-    socketWrite(socket.native_handle(), asio::buffer(data), timeout, ec);
+	write(data, timeout, ec);
 
     if( ec )
     {
@@ -418,23 +327,14 @@ RedisValue RedisClientImpl::doSyncCommand(const std::deque<std::deque<RedisBuffe
         const std::chrono::milliseconds &timeout,
         asio::error_code &ec)
 {
-    std::vector<std::vector<char>> data;
-    std::vector<asio::const_buffer> buffers;
-
-    data.reserve(commands.size());
-    buffers.reserve(commands.size());
-
     for(const auto &command: commands)
     {
-        data.push_back(makeCommand(command));
-        buffers.push_back(asio::buffer(data.back()));
-    }
-
-    socketWrite(socket.native_handle(), buffers, timeout, ec);
-
-    if( ec )
-    {
-        return RedisValue();
+		auto data = makeCommand(command);
+		write(data, timeout, ec);
+		if (ec)
+		{
+			return RedisValue();
+		}
     }
 
     std::vector<RedisValue> responses;
@@ -460,8 +360,7 @@ RedisValue RedisClientImpl::syncReadResponse(
     {
         if (bufSize == 0)
         {
-            bufSize = socketReadSome(socket.native_handle(),
-                    asio::buffer(buf), timeout, ec);
+            bufSize = read(asio::buffer(buf), timeout, ec);
 
             if (ec)
                 return RedisValue();
