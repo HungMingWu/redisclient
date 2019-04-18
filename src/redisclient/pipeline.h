@@ -7,7 +7,6 @@
 
 #include <deque>
 #include <asio.hpp>
-#include <boost/system/error_code.hpp>
 
 #include "redisbuffer.h"
 

@@ -116,17 +116,14 @@ void RedisClientImpl::doProcessMessage(RedisValue v)
 
             if( cmd == "message" || cmd == "pmessage" )
             {
-                SingleShotHandlersMap::iterator it = singleShotMsgHandlers.find(pattern.toString());
-                if( it != singleShotMsgHandlers.end() )
+                if (auto it = singleShotMsgHandlers.find(pattern.toString()); it != singleShotMsgHandlers.end() )
                 {
                     strand.post(std::bind(it->second, value.toByteArray()));
                     singleShotMsgHandlers.erase(it);
                 }
 
-                std::pair<MsgHandlersMap::iterator, MsgHandlersMap::iterator> pair =
-                        msgHandlers.equal_range(pattern.toString());
-                for(MsgHandlersMap::iterator handlerIt = pair.first;
-                    handlerIt != pair.second; ++handlerIt)
+                auto [begin, end] = msgHandlers.equal_range(pattern.toString());
+                for (auto handlerIt = begin; handlerIt != end; ++handlerIt)
                 {
                     strand.post(std::bind(handlerIt->second.second, value.toByteArray()));
                 }
@@ -368,19 +365,18 @@ RedisValue RedisClientImpl::syncReadResponse(
 
         for(size_t pos = 0; pos < bufSize;)
         {
-            std::pair<size_t, RedisParser::ParseResult> result =
-                redisParser.parse(buf.data() + pos, bufSize - pos);
+            auto [advance, result] = redisParser.parse(buf.data() + pos, bufSize - pos);
 
-            pos += result.first;
+            pos += advance;
 
             ::memmove(buf.data(), buf.data() + pos, bufSize - pos);
             bufSize -= pos;
 
-            if( result.second == RedisParser::Completed )
+            if( result == RedisParser::Completed )
             {
                 return redisParser.result();
             }
-            else if( result.second == RedisParser::Incompleted )
+            else if( result == RedisParser::Incompleted )
             {
                 continue;
             }
@@ -419,13 +415,13 @@ void RedisClientImpl::asyncRead(const asio::error_code &ec, const size_t size)
 
     for(size_t pos = 0; pos < size;)
     {
-        std::pair<size_t, RedisParser::ParseResult> result = redisParser.parse(buf.data() + pos, size - pos);
+        auto [advance, result] = redisParser.parse(buf.data() + pos, size - pos);
 
-        if( result.second == RedisParser::Completed )
+        if( result == RedisParser::Completed )
         {
             doProcessMessage(redisParser.result());
         }
-        else if( result.second == RedisParser::Incompleted )
+        else if( result == RedisParser::Incompleted )
         {
             processMessage();
             return;
@@ -436,7 +432,7 @@ void RedisClientImpl::asyncRead(const asio::error_code &ec, const size_t size)
             return;
         }
 
-        pos += result.first;
+		pos += advance;;
     }
 
     processMessage();
@@ -529,10 +525,9 @@ void RedisClientImpl::unsubscribe(const std::string &command,
         state == State::Subscribed)
     {
         // Remove subscribe-handler
-        typedef RedisClientImpl::MsgHandlersMap::iterator iterator;
-        std::pair<iterator, iterator> pair = msgHandlers.equal_range(channel);
+		auto [begin, end] = msgHandlers.equal_range(channel);
 
-        for (iterator it = pair.first; it != pair.second;)
+        for (auto it = begin; it != end;)
         {
             if (it->second.first == handleId)
             {
