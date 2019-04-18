@@ -12,6 +12,7 @@
 #include <boost/asio/local/stream_protocol.hpp>
 #include <boost/asio/strand.hpp>
 
+#include <chrono>
 #include <array>
 #include <string>
 #include <vector>
@@ -64,13 +65,13 @@ public:
     REDIS_CLIENT_DECL static std::vector<char> makeCommand(const std::deque<RedisBuffer> &items);
 
     REDIS_CLIENT_DECL RedisValue doSyncCommand(const std::deque<RedisBuffer> &command,
-        const boost::posix_time::time_duration &timeout,
+        const std::chrono::milliseconds &timeout,
         asio::error_code &ec);
     REDIS_CLIENT_DECL RedisValue doSyncCommand(const std::deque<std::deque<RedisBuffer>> &commands,
-        const boost::posix_time::time_duration &timeout,
+        const std::chrono::milliseconds &timeout,
         asio::error_code &ec);
     REDIS_CLIENT_DECL RedisValue syncReadResponse(
-            const boost::posix_time::time_duration &timeout,
+            const std::chrono::milliseconds &timeout,
             asio::error_code &ec);
 
     REDIS_CLIENT_DECL void doAsyncCommand(

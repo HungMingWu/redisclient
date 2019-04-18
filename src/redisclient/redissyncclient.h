@@ -8,6 +8,7 @@
 
 #include <asio.hpp>
 
+#include <chrono>
 #include <string>
 #include <list>
 #include <functional>
@@ -83,9 +84,9 @@ public:
     REDIS_CLIENT_DECL State state() const;
 
     REDIS_CLIENT_DECL RedisSyncClient &setConnectTimeout(
-            const boost::posix_time::time_duration &timeout);
+            const std::chrono::milliseconds &timeout);
     REDIS_CLIENT_DECL RedisSyncClient &setCommandTimeout(
-            const boost::posix_time::time_duration &timeout);
+            const std::chrono::milliseconds &timeout);
 
     REDIS_CLIENT_DECL RedisSyncClient &setTcpNoDelay(bool enable);
     REDIS_CLIENT_DECL RedisSyncClient &setTcpKeepAlive(bool enable);
@@ -95,8 +96,8 @@ protected:
 
 private:
     std::shared_ptr<RedisClientImpl> pimpl;
-    boost::posix_time::time_duration connectTimeout;
-    boost::posix_time::time_duration commandTimeout;
+    std::chrono::milliseconds connectTimeout;
+    std::chrono::milliseconds commandTimeout;
     bool tcpNoDelay;
     bool tcpKeepAlive;
 };

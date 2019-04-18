@@ -69,7 +69,7 @@ public:
     REDIS_CLIENT_DECL bool isString() const;
 
     // Methods for increasing perfomance
-    // Throws: boost::bad_get if the type does not match
+    // Throws: std::bad_variant_access if the type does not match
     REDIS_CLIENT_DECL std::vector<char> &getByteArray();
     REDIS_CLIENT_DECL const std::vector<char> &getByteArray() const;
     REDIS_CLIENT_DECL std::vector<RedisValue> &getArray();

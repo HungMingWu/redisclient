@@ -91,11 +91,11 @@ namespace
     }
 
     size_t socketReadSome(int socket, asio::mutable_buffer buffer,
-            const boost::posix_time::time_duration &timeout,
+            const std::chrono::milliseconds &timeout,
             asio::error_code &ec)
     {
         size_t bytesRecv = 0;
-        size_t timeoutMsec = timeout.total_milliseconds();
+        size_t timeoutMsec = timeout.count();
 
         for(;;)
         {
@@ -163,11 +163,11 @@ namespace
     }
 
     size_t socketWrite(int socket, asio::const_buffer buffer,
-            const boost::posix_time::time_duration &timeout,
+            const std::chrono::milliseconds &timeout,
             asio::error_code &ec)
     {
         size_t bytesSend = 0;
-        size_t timeoutMsec = timeout.total_milliseconds();
+        size_t timeoutMsec = timeout.count();
 
         while(bytesSend < asio::buffer_size(buffer))
         {
@@ -205,7 +205,7 @@ namespace
     }
 
     size_t socketWrite(int socket, const std::vector<asio::const_buffer> &buffers,
-            const boost::posix_time::time_duration &timeout,
+            const std::chrono::milliseconds &timeout,
             asio::error_code &ec)
     {
         size_t bytesSend = 0;
@@ -404,7 +404,7 @@ std::vector<char> RedisClientImpl::makeCommand(const std::deque<RedisBuffer> &it
     return result;
 }
 RedisValue RedisClientImpl::doSyncCommand(const std::deque<RedisBuffer> &command,
-        const boost::posix_time::time_duration &timeout,
+        const std::chrono::milliseconds &timeout,
         asio::error_code &ec)
 {
     std::vector<char> data = makeCommand(command);
@@ -419,7 +419,7 @@ RedisValue RedisClientImpl::doSyncCommand(const std::deque<RedisBuffer> &command
 }
 
 RedisValue RedisClientImpl::doSyncCommand(const std::deque<std::deque<RedisBuffer>> &commands,
-        const boost::posix_time::time_duration &timeout,
+        const std::chrono::milliseconds &timeout,
         asio::error_code &ec)
 {
     std::vector<std::vector<char>> data;
@@ -457,7 +457,7 @@ RedisValue RedisClientImpl::doSyncCommand(const std::deque<std::deque<RedisBuffe
 }
 
 RedisValue RedisClientImpl::syncReadResponse(
-        const boost::posix_time::time_duration &timeout,
+        const std::chrono::milliseconds &timeout,
         asio::error_code &ec)
 {
     for(;;)

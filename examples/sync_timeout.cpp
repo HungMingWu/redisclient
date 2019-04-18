@@ -15,8 +15,8 @@ int main(int, char **)
     redisclient::RedisSyncClient redisClient(ioService);
     asio::error_code ec;
 
-    redisClient.setConnectTimeout(boost::posix_time::seconds(3))
-        .setCommandTimeout(boost::posix_time::seconds(3));
+    redisClient.setConnectTimeout(std::chrono::seconds(3))
+        .setCommandTimeout(std::chrono::seconds(3));
     redisClient.connect(endpoint, ec);
 
     if (ec)
