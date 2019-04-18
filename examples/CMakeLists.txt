@@ -20,12 +20,19 @@ foreach(EXAMPLE ${EXAMPLES})
       ${Boost_DATE_TIME_LIBRARY})
 endforeach()
 
+target_link_libraries(async_pubsub
+    RedisClient
+    fmt::fmt
+)
+
 target_link_libraries(benchmark
     RedisClient
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt
 )
 
 target_link_libraries(sync_benchmark
     RedisClient
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt
 )

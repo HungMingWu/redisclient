@@ -2,7 +2,7 @@
 #include <iostream>
 #include <asio.hpp>
 #include <chrono>
-#include <boost/format.hpp>
+#include <fmt/format.h>
 
 #include <redisclient/redisasyncclient.h>
 
@@ -98,7 +98,7 @@ protected:
     void onPublishTimeout()
     {
         static size_t counter = 0;
-        std::string msg = str(boost::format("message %1%")  % counter++);
+        std::string msg = fmt::format("message {}", counter++);
 
         if( publisher.state() == RedisAsyncClient::State::Connected )
         {

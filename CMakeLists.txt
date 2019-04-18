@@ -59,6 +59,7 @@ else()
 endif()
 
 add_subdirectory(src)
+add_subdirectory(external/fmt)
 if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()

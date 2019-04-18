@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include <asio.hpp>
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <boost/program_options.hpp>
 
 #include <redisclient/redisasyncclient.h>
@@ -95,7 +95,7 @@ public:
     void work()
     {
         static int i = 0;
-        std::string key = str(boost::format("key %1%") % ++i);
+        std::string key = fmt::format("key {}", ++i);
         auto self = shared_from_this();
 
         redisClient->command("SET", {key, key}, [key, self](const redisclient::RedisValue &) {

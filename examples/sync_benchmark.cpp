@@ -4,7 +4,7 @@
 #include <memory>
 
 #include <asio.hpp>
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <boost/program_options.hpp>
 
 #include <redisclient/redissyncclient.h>
@@ -42,7 +42,7 @@ public:
 
         for(;;)
         {
-            std::string key = str(boost::format("key %1%") % ++i);
+            std::string key = fmt::format("key {}", ++i);
 
             if (redisClient.command("SET", {key, key}) != "OK")
                 abort();
