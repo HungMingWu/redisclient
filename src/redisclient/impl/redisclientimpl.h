@@ -23,7 +23,6 @@
 
 #include "redisclient/redisparser.h"
 #include "redisclient/redisbuffer.h"
-#include "redisclient/config.h"
 
 namespace redisclient {
 
@@ -37,55 +36,55 @@ public:
         Closed
     };
 
-    REDIS_CLIENT_DECL RedisClientImpl(asio::io_context &ioService);
-    REDIS_CLIENT_DECL ~RedisClientImpl();
+    RedisClientImpl(asio::io_context &ioService);
+    ~RedisClientImpl();
 
-    REDIS_CLIENT_DECL void handleAsyncConnect(
+    void handleAsyncConnect(
             const asio::error_code &ec,
             std::function<void(asio::error_code)> handler);
 
-    REDIS_CLIENT_DECL size_t subscribe(const std::string &command,
+    size_t subscribe(const std::string &command,
         const std::string &channel,
         std::function<void(std::vector<char> msg)> msgHandler,
         std::function<void(RedisValue)> handler);
 
-    REDIS_CLIENT_DECL void singleShotSubscribe(const std::string &command,
+    void singleShotSubscribe(const std::string &command,
         const std::string &channel,
         std::function<void(std::vector<char> msg)> msgHandler,
         std::function<void(RedisValue)> handler);
 
-    REDIS_CLIENT_DECL void unsubscribe(const std::string &command,
+    void unsubscribe(const std::string &command,
         size_t handle_id, const std::string &channel,
         std::function<void(RedisValue)> handler);
 
-    REDIS_CLIENT_DECL void close() noexcept;
+    void close() noexcept;
 
-    REDIS_CLIENT_DECL State getState() const;
+    State getState() const;
 
-    REDIS_CLIENT_DECL static std::vector<char> makeCommand(const std::deque<RedisBuffer> &items);
+    static std::vector<char> makeCommand(const std::deque<RedisBuffer> &items);
 
-    REDIS_CLIENT_DECL RedisValue doSyncCommand(const std::deque<RedisBuffer> &command,
+    RedisValue doSyncCommand(const std::deque<RedisBuffer> &command,
         const std::chrono::milliseconds &timeout,
         asio::error_code &ec);
-    REDIS_CLIENT_DECL RedisValue doSyncCommand(const std::deque<std::deque<RedisBuffer>> &commands,
+    RedisValue doSyncCommand(const std::deque<std::deque<RedisBuffer>> &commands,
         const std::chrono::milliseconds &timeout,
         asio::error_code &ec);
-    REDIS_CLIENT_DECL RedisValue syncReadResponse(
+    RedisValue syncReadResponse(
             const std::chrono::milliseconds &timeout,
             asio::error_code &ec);
 
-    REDIS_CLIENT_DECL void doAsyncCommand(
+    void doAsyncCommand(
             std::vector<char> buff,
             std::function<void(RedisValue)> handler);
 
-    REDIS_CLIENT_DECL void sendNextCommand();
-    REDIS_CLIENT_DECL void processMessage();
-    REDIS_CLIENT_DECL void doProcessMessage(RedisValue v);
-    REDIS_CLIENT_DECL void asyncWrite(const asio::error_code &ec, const size_t);
-    REDIS_CLIENT_DECL void asyncRead(const asio::error_code &ec, const size_t);
+    void sendNextCommand();
+    void processMessage();
+    void doProcessMessage(RedisValue v);
+    void asyncWrite(const asio::error_code &ec, const size_t);
+    void asyncRead(const asio::error_code &ec, const size_t);
 
-    REDIS_CLIENT_DECL void onRedisError(const RedisValue &);
-    REDIS_CLIENT_DECL static void defaulErrorHandler(const std::string &s);
+    void onRedisError(const RedisValue &);
+    static void defaulErrorHandler(const std::string &s);
 
     template<typename Handler>
     inline void post(const Handler &handler);
@@ -145,9 +144,5 @@ inline std::string to_string(RedisClientImpl::State state)
 }
 }
 
-
-#ifdef REDIS_CLIENT_HEADER_ONLY
-#include "redisclientimpl.cpp"
-#endif
 
 #endif // REDISCLIENT_REDISCLIENTIMPL_H

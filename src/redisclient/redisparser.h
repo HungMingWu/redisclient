@@ -11,14 +11,13 @@
 #include <utility>
 
 #include "redisvalue.h"
-#include "config.h"
 
 namespace redisclient {
 
 class RedisParser
 {
 public:
-    REDIS_CLIENT_DECL RedisParser();
+    RedisParser();
 
     enum ParseResult {
         Completed,
@@ -26,12 +25,12 @@ public:
         Error,
     };
 
-    REDIS_CLIENT_DECL std::pair<size_t, ParseResult> parse(const char *ptr, size_t size);
+    std::pair<size_t, ParseResult> parse(const char *ptr, size_t size);
 
-    REDIS_CLIENT_DECL RedisValue result();
+    RedisValue result();
 
 protected:
-    REDIS_CLIENT_DECL std::pair<size_t, ParseResult> parseChunk(const char *ptr, size_t size);
+    std::pair<size_t, ParseResult> parseChunk(const char *ptr, size_t size);
 
     inline bool isChar(int c)
     {
@@ -43,7 +42,7 @@ protected:
         return (c >= 0 && c <= 31) || (c == 127);
     }
 
-    REDIS_CLIENT_DECL long int bufToLong(const char *str, size_t size);
+    long int bufToLong(const char *str, size_t size);
 
 private:
     enum State {
@@ -87,9 +86,5 @@ private:
 };
 
 }
-
-#ifdef REDIS_CLIENT_HEADER_ONLY
-#include "redisclient/impl/redisparser.cpp"
-#endif
 
 #endif // REDISCLIENT_REDISPARSER_H
