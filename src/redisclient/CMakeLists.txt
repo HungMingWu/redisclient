@@ -1,5 +1,4 @@
-set(hdrs config.h
-         pipeline.h
+set(hdrs pipeline.h
          redisasyncclient.h
          redisbuffer.h
          redisparser.h
@@ -25,6 +24,7 @@ set(srcs impl/pipeline.cpp
   target_include_directories(RedisClient
     PUBLIC
       ${Boost_INCLUDE_DIRS}
+      $<BUILD_INTERFACE:/redisclient/external/asio/asio/include>
   )
   target_link_libraries(RedisClient
     PUBLIC
