@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 #include <functional>
-#include <boost/asio/ip/address.hpp>
 #include <asio.hpp>
 
 #include <redisclient/redisasyncclient.h>

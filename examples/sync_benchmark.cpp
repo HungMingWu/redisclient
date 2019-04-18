@@ -4,9 +4,7 @@
 #include <memory>
 
 #include <asio.hpp>
-#include <boost/asio/ip/address.hpp>
 #include <boost/format.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 
 #include <redisclient/redissyncclient.h>

@@ -2,7 +2,6 @@
 #include <vector>
 #include <iostream>
 #include <asio.hpp>
-#include <boost/asio/ip/address.hpp>
 #include <redisclient/pipeline.h>
 #include <redisclient/redissyncclient.h>
 

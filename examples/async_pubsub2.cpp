@@ -2,7 +2,6 @@
 #include <iostream>
 #include <functional>
 #include <asio.hpp>
-#include <boost/asio/ip/address.hpp>
 
 #include <redisclient/redisasyncclient.h>
 

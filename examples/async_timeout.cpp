@@ -4,7 +4,6 @@
 #include <asio.hpp>
 #include <chrono>
 #include <thread>
-#include <boost/asio/ip/address.hpp>
 
 #include <redisclient/redisasyncclient.h>
 
@@ -91,7 +90,6 @@ void Worker::onTimeout(const asio::error_code &ec)
     if (!ec)
     {
         std::cerr << "timeout!\n";
-        boost::system::error_code ignore_ec;
 
         redisClient.disconnect();
         // try again

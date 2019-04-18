@@ -5,10 +5,7 @@
 #include <chrono>
 
 #include <asio.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <boost/asio/deadline_timer.hpp>
 #include <boost/format.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 
 #include <redisclient/redisasyncclient.h>
