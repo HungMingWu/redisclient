@@ -16,6 +16,7 @@ foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXECUTABLE} ${EXAMPLE})
   target_link_libraries(${EXECUTABLE}
       RedisClient
+      ${Boost_SYSTEM_LIBRARY}
       ${Boost_DATE_TIME_LIBRARY})
 endforeach()
 

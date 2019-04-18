@@ -1,8 +1,6 @@
 #pragma once
 
 #include <asio.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/system/system_error.hpp>
 
 namespace redisclient
 {

@@ -6,8 +6,6 @@
 #ifndef REDISCLIENT_REDISCLIENTIMPL_CPP
 #define REDISCLIENT_REDISCLIENTIMPL_CPP
 
-#include <boost/asio/write.hpp>
-
 #include <algorithm>
 
 #include "redisclientimpl.h"

@@ -7,10 +7,6 @@
 #define REDISCLIENT_REDISCLIENTIMPL_H
 
 #include <asio.hpp>
-#include <boost/asio/generic/stream_protocol.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/local/stream_protocol.hpp>
-#include <boost/asio/strand.hpp>
 
 #include <chrono>
 #include <array>
