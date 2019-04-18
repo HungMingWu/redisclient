@@ -40,32 +40,22 @@ RedisSyncClient::~RedisSyncClient()
         pimpl->close();
 }
 
-void RedisSyncClient::connect(const asio::ip::tcp::endpoint &endpoint)
+void RedisSyncClient::connect(const std::string& host, const std::string& service)
 {
     asio::error_code ec;
 
-    connect(endpoint, ec);
+    connect(host, service, ec);
     detail::throwIfError(ec);
 }
 
-void RedisSyncClient::connect(const asio::ip::tcp::endpoint &endpoint,
+void RedisSyncClient::connect(const std::string& host, const std::string& service,
     asio::error_code &ec)
 {
-    pimpl->socket.open(endpoint.protocol(), ec);
-
     if (!ec && tcpNoDelay)
         pimpl->socket.set_option(asio::ip::tcp::no_delay(true), ec);
 
-    // TODO keep alive option
-
-    // boost asio does not support `connect` with timeout
-    int socket = pimpl->socket.native_handle();
-    struct sockaddr_in addr;
-
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(endpoint.port());
-    addr.sin_addr.s_addr = inet_addr(endpoint.address().to_string().c_str());
-
+	pimpl->connect(host, service, connectTimeout, ec);
+ 
     if (!ec)
         pimpl->state = State::Connected;
 }

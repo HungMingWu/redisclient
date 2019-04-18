@@ -29,14 +29,10 @@ public:
 
     void run()
     {
-        asio::ip::tcp::endpoint endpoint(
-                asio::ip::address::from_string(config.address), config.port);
-
-
         redisclient::RedisSyncClient redisClient(ioService);
         asio::error_code ec;
 
-        redisClient.connect(endpoint, ec);
+        redisClient.connect(config.address, std::to_string(config.port), ec);
 
         if (ec)
         {

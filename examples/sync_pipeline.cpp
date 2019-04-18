@@ -8,15 +8,13 @@
 
 int main(int, char **)
 {
-    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
-    asio::ip::tcp::endpoint endpoint(address, port);
 
     asio::io_context ioService;
     redisclient::RedisSyncClient redis(ioService);
     asio::error_code ec;
 
-    redis.connect(endpoint, ec);
+    redis.connect("127.0.0.1", std::to_string(port), ec);
 
     if (ec)
     {

@@ -28,6 +28,7 @@ namespace redisclient {
 
 class RedisClientImpl : public std::enable_shared_from_this<RedisClientImpl> {
 	void run(std::chrono::steady_clock::duration timeout);
+
 	size_t read(asio::mutable_buffer buffer, std::chrono::steady_clock::duration timeout, asio::error_code& ec);
 	void write(const std::vector<char>& data,
 		std::chrono::steady_clock::duration timeout, asio::error_code& ec);
@@ -95,7 +96,9 @@ public:
 
     asio::io_context &ioService;
     asio::io_context::strand strand;
-    asio::generic::stream_protocol::socket socket;
+    asio::ip::tcp::socket socket;
+	void connect(const std::string& host, const std::string& service,
+		std::chrono::steady_clock::duration timeout, asio::error_code& ec);
     RedisParser redisParser;
     std::array<char, 4096> buf;
     size_t bufSize; // only for sync

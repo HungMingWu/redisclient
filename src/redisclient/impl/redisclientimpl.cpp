@@ -264,6 +264,27 @@ void RedisClientImpl::run(std::chrono::steady_clock::duration timeout)
 	}
 }
 
+void RedisClientImpl::connect(const std::string& host, const std::string& service,
+	std::chrono::steady_clock::duration timeout, asio::error_code& ec)
+{
+	// Resolve the host name and service to a list of endpoints.
+	auto endpoints = asio::ip::tcp::resolver(ioService).resolve(host, service);
+
+	// Start the asynchronous operation itself. The lambda that is used as a
+	// callback will update the error variable when the operation completes.
+	// The blocking_udp_client.cpp example shows how you can use std::bind
+	// rather than a lambda.
+	asio::async_connect(socket, endpoints,
+		[&](asio::error_code result_error,
+			const asio::ip::tcp::endpoint& /*result_endpoint*/)
+		{
+			ec = result_error;
+		});
+
+	// Run the operation until it completes, or until the timeout.
+	run(timeout);
+}
+
 size_t RedisClientImpl::read(asio::mutable_buffer buffer,
 	std::chrono::steady_clock::duration timeout, asio::error_code& ec)
 {

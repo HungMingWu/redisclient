@@ -7,9 +7,7 @@
 
 int main(int, char **)
 {
-    asio::ip::address address = asio::ip::address::from_string("127.0.0.1");
     const unsigned short port = 6379;
-    asio::ip::tcp::endpoint endpoint(address, port);
 
     asio::io_context ioService;
     redisclient::RedisSyncClient redisClient(ioService);
@@ -17,7 +15,7 @@ int main(int, char **)
 
     redisClient.setConnectTimeout(std::chrono::seconds(3))
         .setCommandTimeout(std::chrono::seconds(3));
-    redisClient.connect(endpoint, ec);
+    redisClient.connect("127.0.0.1", std::to_string(port), ec);
 
     if (ec)
     {

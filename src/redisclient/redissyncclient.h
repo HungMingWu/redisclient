@@ -34,12 +34,12 @@ public:
 
     // Connect to redis server
     void connect(
-            const asio::ip::tcp::endpoint &endpoint,
+            const std::string& host, const std::string& service,
             asio::error_code &ec);
 
     // Connect to redis server
     void connect(
-            const asio::ip::tcp::endpoint &endpoint);
+            const std::string& host, const std::string& service);
 
 #ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
     void connect(
