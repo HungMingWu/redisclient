@@ -96,16 +96,11 @@ private:
     bool error;
 };
 
-template<class V>
-std::type_info const& var_type1(V const& v){
-  return std::visit( [](auto&&x)->decltype(auto){ return typeid(x); }, v );
-}
-
 template<typename T>
 T RedisValue::castTo() const
 {
-    if( var_type1(value) == typeid(T) ) 
-        return std::get<T>(value);
+    if (auto pval = std::get_if<T>(&value)) 
+        return *pval;
     else
         return T();
 }
@@ -113,7 +108,7 @@ T RedisValue::castTo() const
 template<typename T>
 bool RedisValue::typeEq() const
 {
-    if( var_type1(value) == typeid(T) )
+    if (auto pval = std::get_if<T>(&value))
         return true;
     else
         return false;

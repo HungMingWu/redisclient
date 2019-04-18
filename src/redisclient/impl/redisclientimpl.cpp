@@ -14,10 +14,6 @@
 
 namespace
 {
-    template<class V>
-    std::type_info const& var_type(V const& v){
-        return std::visit( [](auto&&x)->decltype(auto){ return typeid(x); }, v );
-    }
 
     static const char crlf[] = {'\r', '\n'};
     inline void bufferAppend(std::vector<char> &vec, const std::string &s);
@@ -29,8 +25,8 @@ namespace
 
     inline void bufferAppend(std::vector<char> &vec, const redisclient::RedisBuffer &buf)
     {
-        if (var_type(buf.data) == typeid(std::string))
-            bufferAppend(vec, std::get<std::string>(buf.data));
+        if (auto pval = std::get_if<std::string>(&buf.data))
+            bufferAppend(vec, *pval);
         else
             bufferAppend(vec, std::get<std::vector<char>>(buf.data));
     }
